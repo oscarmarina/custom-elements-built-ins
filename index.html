@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="ARIA structural roles and their relationship with nodes that allow attachShadow">
+    <title>Custom Elements built-ins</title>
+
+    <style>
+      html {
+        font-family: sans-serif;
+      }
+      table {
+        width: 76%;
+        border: 1px solid #cbcbcb;
+        border-spacing: 0;
+        empty-cells: show;
+        text-align: left;
+        border-collapse: collapse;
+        margin: 2rem auto;
+      }
+
+      table caption {
+        color: #000;
+        font: italic 85%/1 arial, sans-serif;
+        padding: 1em 0;
+      }
+
+      table td,
+      table th {
+        border: 0;
+        border-left: 1px solid #cbcbcb;
+        font-size: inherit;
+        margin: 0;
+        overflow: visible;
+      }
+
+      table thead {
+        background-color: #e0e0e0;
+        color: #000;
+        text-align: left;
+        vertical-align: bottom;
+      }
+
+      table tr {
+        border-top: 1px solid #cbcbcb;
+      }
+      table td {
+        background-color: initial;
+      }
+
+      table td,
+      table th {
+        border-bottom-width: 0;
+        border-left: 1px solid #cbcbcb;
+        border-right-width: 0;
+        border-top-width: 0;
+        font-size: inherit;
+        margin: 0;
+        padding: 0.5em 1em;
+        overflow: visible;
+      }
+
+      table thead {
+        background-color: #e0e0e0;
+        color: #000;
+        text-align: left;
+        vertical-align: bottom;
+      }
+
+      table td {
+        background-color: initial;
+      }
+    </style>
+    <script src="./min.js"></script>
+    <script type="module">
+      /*
+        https://unpkg.com/@ungap/custom-elements@1.1.1/
+        https://webreflection.medium.com/in-favor-of-custom-elements-built-ins-bae3f40f27d5
+        https://www.jackfranklin.co.uk/blog/working-with-react-and-the-web-platform/
+       */
+
+      const customElementsFactory = (elements) => {
+        elements.forEach((element) => {
+          customElements.define(
+            `${element.name}-element`,
+            class SelectElement extends document.createElement(element.name).constructor {
+              #nodeRoot = '';
+              constructor() {
+                super();
+                try {
+                  this.#nodeRoot = this.attachShadow({ mode: 'open' });
+                } catch (err) {
+                  this.#nodeRoot = this;
+                }
+                const selectTemplate = document.getElementById(`${element.name}-template`);
+                this.#nodeRoot.appendChild(selectTemplate.content.cloneNode(true));
+              }
+              connectedCallback() {
+                this.addEventListener('change', (ev) => console.log(ev));
+                console.info('====>', this.#nodeRoot);
+                this.style.cssText += `${element.style}`;
+              }
+            },
+            { extends: element.name }
+          );
+        });
+      };
+      customElementsFactory([
+        { name: 'p', style: `color:#6b5b95;`},
+        { name: 'details', style: `color:#34568b; margin: 1rem auto`},
+        { name: 'input', style: `background-color:#88b04b;`},
+        { name: 'button', style: `background-color:#92a8d1;`},
+        { name: 'hr', style: `border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));`},
+        { name: 'a', style: `color:#88B04B;`},]);
+    </script>
+  </head>
+  <body>
+    <button is="button-element">button</button>
+    <p is="p-element">paragraph</p>
+    <a href="https://htmlpreview.github.io/?https://github.com/oscarmarina/custom-elements-built-ins/blob/main/index.html" is="a-element">demo online custom-elements-built-ins</a>
+    <details is="details-element">eo</details>
+    <input placeholder="hi" is="input-element" />
+
+    <hr is="hr-element" />
+
+    <table class="widget-features">
+      <caption>
+        ARIA structural roles and their relationship with nodes that allow
+        <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow"
+          >attachShadow</a
+        >
+      </caption>
+      <thead>
+        <tr>
+          <th>ARIA Role</th>
+          <th>Attach shadow</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>No equivalent role</th>
+          <td>body</td>
+        </tr>
+        <tr>
+          <th>article</th>
+          <td>article</td>
+        </tr>
+        <tr>
+          <th>complementary</th>
+          <td>aside</td>
+        </tr>
+        <tr>
+          <th>blockquote</th>
+          <td>blockquote</td>
+        </tr>
+        <tr>
+          <th>generic</th>
+          <td>div</td>
+        </tr>
+        <tr>
+          <th>contentinfo</th>
+          <td>footer</td>
+        </tr>
+        <tr>
+          <th>heading</th>
+          <td>h1, h2, h3, h4, h5, h6</td>
+        </tr>
+        <tr>
+          <th>
+            banner or
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/banner_role"
+              >generic</a
+            >
+          </th>
+          <td>header</td>
+        </tr>
+        <tr>
+          <th>main</th>
+          <td>main</td>
+        </tr>
+        <tr>
+          <th>navigation</th>
+          <td>nav</td>
+        </tr>
+        <tr>
+          <th>paragraph</th>
+          <td>p</td>
+        </tr>
+        <tr>
+          <th>region</th>
+          <td>section</td>
+        </tr>
+        <tr>
+          <th>generic</th>
+          <td>span</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <template id="p-template">
+      <style>
+        :host {
+          display: block;
+        }
+      </style>
+      -- <slot></slot> --
+    </template>
+
+    <template id="details-template">
+      <summary>My details</summary>
+    </template>
+
+    <template id="input-template"></template>
+    <template id="button-template"> ===</template>
+    <template id="hr-template"></template>
+    <template id="a-template"></template>
+  </body>
+</html>
